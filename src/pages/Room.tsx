@@ -13,7 +13,7 @@ interface Message {
   created_at: string;
   user_id: string;
   profiles?: {
-    email: string;
+    email?: string | null;
   };
 }
 
@@ -30,6 +30,7 @@ const Room = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [room, setRoom] = useState<Room | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +47,7 @@ const Room = () => {
       }
 
       setCurrentUserId(session.user.id);
+      setCurrentUserEmail(session.user.email || "");
 
       // Fetch room details
       const { data: roomData, error: roomError } = await supabase
@@ -69,7 +71,7 @@ const Room = () => {
       // Fetch messages
       const { data: messagesData, error: messagesError } = await supabase
         .from("messages")
-        .select("*")
+        .select("*, profiles:profiles(email)")
         .eq("room_id", roomId)
         .order("created_at", { ascending: true })
         .limit(50);
@@ -85,6 +87,23 @@ const Room = () => {
 
     initializeRoom();
 
+    const enrichMessageWithProfile = async (message: Message) => {
+      if (message.profiles?.email) {
+        return message;
+      }
+
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", message.user_id)
+        .single();
+
+      return {
+        ...message,
+        profiles: profileData?.email ? { email: profileData.email } : message.profiles,
+      };
+    };
+
     // Subscribe to new messages
     const channel = supabase
       .channel(`room-${roomId}`)
@@ -96,8 +115,9 @@ const Room = () => {
           table: "messages",
           filter: `room_id=eq.${roomId}`,
         },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
+        async (payload) => {
+          const enrichedMessage = await enrichMessageWithProfile(payload.new as Message);
+          setMessages((prev) => [...prev, enrichedMessage]);
           setTimeout(scrollToBottom, 100);
         }
       )
@@ -169,7 +189,7 @@ const Room = () => {
             <ChatMessage
               key={message.id}
               content={message.content}
-              userName={message.user_id}
+              userName={message.profiles?.email || currentUserEmail || message.user_id}
               timestamp={message.created_at}
               isCurrentUser={message.user_id === currentUserId}
             />
