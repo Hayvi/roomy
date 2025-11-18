@@ -21,6 +21,7 @@ interface Room {
   id: string;
   name: string;
   member_count: number;
+  owner_id: string;
 }
 
 const Room = () => {
@@ -32,6 +33,7 @@ const Room = () => {
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [currentUserEmail, setCurrentUserEmail] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -150,6 +152,32 @@ const Room = () => {
     }
   };
 
+  const handleDeleteRoom = async () => {
+    if (!room || !roomId || room.owner_id !== currentUserId || deleting) return;
+
+    const confirmed = window.confirm("Delete this room and all its messages? This cannot be undone.");
+    if (!confirmed) return;
+
+    setDeleting(true);
+    const { error } = await supabase.from("rooms").delete().eq("id", roomId);
+    setDeleting(false);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete room",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Room deleted",
+      description: "The room and its messages have been removed.",
+    });
+    navigate("/");
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -179,6 +207,12 @@ const Room = () => {
               </div>
             </div>
           </div>
+
+          {room?.owner_id === currentUserId && (
+            <Button variant="destructive" size="sm" onClick={handleDeleteRoom} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete Room"}
+            </Button>
+          )}
         </div>
       </div>
 
