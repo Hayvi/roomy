@@ -22,7 +22,6 @@ export function GlobalJoinRoomDialog({
     isOpen,
     onOpenChange,
 }: GlobalJoinRoomDialogProps) {
-    const [roomName, setRoomName] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -30,30 +29,29 @@ export function GlobalJoinRoomDialog({
 
     const handleJoin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!roomName.trim() || !password.trim()) return;
+        if (!password.trim()) return;
 
         setLoading(true);
 
         try {
-            // 1. Find all rooms with this name
+            // Fetch all room IDs
             const { data: rooms, error: fetchError } = await supabase
                 .from("rooms")
-                .select("id")
-                .eq("name", roomName.trim());
+                .select("id");
 
             if (fetchError) throw fetchError;
 
             if (!rooms || rooms.length === 0) {
                 toast({
-                    title: "Room Not Found",
-                    description: "No room exists with that name.",
+                    title: "No Rooms Available",
+                    description: "There are no rooms to join yet.",
                     variant: "destructive",
                 });
                 setLoading(false);
                 return;
             }
 
-            // 2. Try to join each room with the password
+            // Try to join each room with the password
             let joinedRoomId: string | null = null;
 
             for (const room of rooms) {
@@ -74,11 +72,12 @@ export function GlobalJoinRoomDialog({
                     description: "Successfully joined the room!",
                 });
                 onOpenChange(false);
+                setPassword(""); // Clear password
                 navigate(`/room/${joinedRoomId}`);
             } else {
                 toast({
                     title: "Invalid Password",
-                    description: "The password is incorrect for this room name.",
+                    description: "No room found with this password.",
                     variant: "destructive",
                 });
             }
@@ -100,21 +99,10 @@ export function GlobalJoinRoomDialog({
                 <DialogHeader>
                     <DialogTitle>Join a Room</DialogTitle>
                     <DialogDescription>
-                        Enter the room name and password to join.
+                        Enter the room password to join.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleJoin} className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="roomName">Room Name</Label>
-                        <Input
-                            id="roomName"
-                            placeholder="Enter room name"
-                            value={roomName}
-                            onChange={(e) => setRoomName(e.target.value)}
-                            disabled={loading}
-                            required
-                        />
-                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
                         <Input
