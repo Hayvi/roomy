@@ -2,6 +2,8 @@
 ALTER TABLE public.room_members ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL;
 
 -- Allow users to update their own last_seen_at
+DROP POLICY IF EXISTS "Users can update their own last_seen_at" ON public.room_members;
+
 CREATE POLICY "Users can update their own last_seen_at"
   ON public.room_members FOR UPDATE
   TO authenticated
