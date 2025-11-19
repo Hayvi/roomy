@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import ChatMessage from "@/components/ChatMessage";
 import MessageInput from "@/components/MessageInput";
 import JoinRoomDialog from "@/components/JoinRoomDialog";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, Users, Copy } from "lucide-react";
 
 interface Message {
   id: string;
@@ -282,8 +282,24 @@ const Room = () => {
           <div className="flex items-center gap-2">
             {room?.owner_id === currentUserId && (
               <>
-                <div className="bg-muted px-3 py-1 rounded-md text-sm font-mono border border-border">
-                  Password: {roomPassword || "Loading..."}
+                <div className="bg-muted px-3 py-1 rounded-md text-sm font-mono border border-border flex items-center gap-2">
+                  <span>Password: {roomPassword || "Loading..."}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 hover:bg-transparent"
+                    onClick={() => {
+                      if (roomPassword) {
+                        navigator.clipboard.writeText(roomPassword);
+                        toast({
+                          title: "Copied",
+                          description: "Password copied to clipboard",
+                        });
+                      }
+                    }}
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
                 </div>
                 <Button variant="destructive" size="sm" onClick={handleDeleteRoom} disabled={deleting}>
                   {deleting ? "Deleting..." : "Delete Room"}
