@@ -38,6 +38,7 @@ const Room = () => {
   const [isMember, setIsMember] = useState(false);
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [roomPassword, setRoomPassword] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -73,6 +74,19 @@ const Room = () => {
       }
 
       setRoom(roomData);
+
+      // Fetch password if owner
+      if (roomData.owner_id === session.user.id) {
+        const { data: secretData } = await supabase
+          .from("room_secrets")
+          .select("password_plaintext")
+          .eq("room_id", roomId)
+          .single();
+
+        if (secretData) {
+          setRoomPassword(secretData.password_plaintext);
+        }
+      }
 
       // Check membership
       const { data: memberData } = await supabase
@@ -265,11 +279,18 @@ const Room = () => {
             </div>
           </div>
 
-          {room?.owner_id === currentUserId && (
-            <Button variant="destructive" size="sm" onClick={handleDeleteRoom} disabled={deleting}>
-              {deleting ? "Deleting..." : "Delete Room"}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {room?.owner_id === currentUserId && (
+              <>
+                <div className="bg-muted px-3 py-1 rounded-md text-sm font-mono border border-border">
+                  Password: {roomPassword || "Loading..."}
+                </div>
+                <Button variant="destructive" size="sm" onClick={handleDeleteRoom} disabled={deleting}>
+                  {deleting ? "Deleting..." : "Delete Room"}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

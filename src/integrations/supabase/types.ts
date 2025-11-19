@@ -131,6 +131,32 @@ export type Database = {
           }
         ]
       }
+      room_secrets: {
+        Row: {
+          created_at: string
+          password_plaintext: string
+          room_id: string
+        }
+        Insert: {
+          created_at?: string
+          password_plaintext: string
+          room_id: string
+        }
+        Update: {
+          created_at?: string
+          password_plaintext?: string
+          room_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_secrets_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       rooms: {
         Row: {
           created_at: string
