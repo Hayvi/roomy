@@ -178,7 +178,18 @@ const Room = () => {
     // Interval update
     const interval = setInterval(updateHeartbeat, HEARTBEAT_INTERVAL_MS);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      // Immediately mark user as offline when leaving the room
+      supabase
+        .from("room_members")
+        .update({ last_seen_at: new Date(0).toISOString() }) // Set to epoch
+        .eq("room_id", roomId)
+        .eq("user_id", currentUserId)
+        .then(({ error }) => {
+          if (error) console.error("Error updating offline status:", error);
+        });
+    };
   }, [isMember, roomId, currentUserId]);
 
   const fetchMessages = async () => {
