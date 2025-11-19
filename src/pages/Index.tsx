@@ -239,7 +239,7 @@ const Index = () => {
                 <MessageSquare className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Chat Rooms</h1>
+                <h1 className="text-2xl font-bold">Roomy</h1>
                 <p className="text-sm text-muted-foreground">{displayName}</p>
               </div>
             </div>
@@ -264,7 +264,7 @@ const Index = () => {
               <DialogHeader>
                 <DialogTitle>Create New Room</DialogTitle>
                 <DialogDescription>
-                  Enter a name for your new chat room
+                  Enter a name for your new room
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">

@@ -108,7 +108,7 @@ const Auth = () => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
-            Welcome to Chat Rooms
+            Welcome to Roomy
           </CardTitle>
           <CardDescription>
             Enter your display name to start chatting
