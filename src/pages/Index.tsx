@@ -247,7 +247,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary rounded-xl">
-                <img src="/favicon.png" alt="Roomy" className="h-6 w-6" />
+                <img src="/logo.svg" alt="Roomy" className="h-6 w-6" />
               </div>
 
               <div>
@@ -310,7 +310,7 @@ const Index = () => {
 
         {rooms.length === 0 ? (
           <div className="text-center py-12">
-            <img src="/favicon.png" alt="Roomy" className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <img src="/logo.svg" alt="Roomy" className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No rooms yet</h3>
 
             <p className="text-muted-foreground mb-4">

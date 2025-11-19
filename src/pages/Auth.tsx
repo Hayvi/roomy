@@ -105,7 +105,8 @@ const Auth = () => {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-primary rounded-xl">
-              <img src="/favicon.png" alt="Roomy" className="w-8 h-8" />
+              <img src="/logo.svg" alt="Roomy" className="w-8 h-8" />
+
             </div>
           </div>
 
