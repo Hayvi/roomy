@@ -7,12 +7,15 @@ A modern, anonymous chat application built with Supabase, featuring Discord-styl
 - 🎭 **Anonymous Authentication** – No email or sign-up required
 - 🏷️ **Discord-Style Names** – Unique display names with auto-generated tags (e.g., `Alex#1234`)
 - 🔒 **Password-Protected Rooms** – Auto-generated 6-character passwords for each room
-- 🌍 **Global Join** – Join any room by name + password
+- 🌍 **Global Join** – Join any room with just a password
 - 💬 **Real-Time Messaging** – Instant message delivery via Supabase Realtime
+- 👥 **Online Status Tracking** – See who's active in rooms with live presence indicators
 - 📎 **File Sharing** – Upload images and files (up to 5MB) with inline image previews
+- 🗑️ **Auto-Cleanup** – Automatic data cleanup every 7 days (perfect for free tier)
 - 🛡️ **Row-Level Security** – Protected database with PostgreSQL RLS policies
-- 📱 **Responsive UI** – Built with shadcn/ui and Tailwind CSS
-- ⚡ **Performance Optimized** – Database triggers and indexes for scalability
+- 📱 **Responsive Design** – Modern UI built with shadcn/ui and Tailwind CSS
+- ⚡ **Performance Optimized** – Database triggers, indexes, and computed columns
+
 
 ## 🛠️ Tech Stack
 
@@ -64,10 +67,12 @@ This will create:
 - `public.profiles` – User display names
 - `public.rooms` – Chat rooms with password hashes
 - `public.room_secrets` – Plaintext passwords (visible to room owners)
-- `public.room_members` – Room membership tracking
+- `public.room_members` – Room membership tracking with online status
 - `public.messages` – Chat messages with file attachments
 - `storage.buckets` – 'chat-attachments' bucket for file uploads
+- Auto-cleanup cron job – Removes data older than 7 days
 - RLS policies, triggers, indexes, and RPC functions
+
 
 ### 4. Start Development Server
 
@@ -98,7 +103,15 @@ Visit `http://localhost:8080` (or the port shown in your terminal)
 3. Images are displayed inline with a lightbox view
 4. Other files are shown as downloadable links
 
+### Auto-Cleanup (7-Day Retention)
+1. Scheduled cron job runs daily at 3:00 AM UTC
+2. Automatically deletes rooms older than 7 days
+3. Cascades to messages, room members, and storage files
+4. Keeps your database within free tier limits
+5. Can be manually triggered with `SELECT cleanup_old_data();`
+
 ### Security
+
 - **Password Hashing**: All passwords are hashed using PostgreSQL's `pgcrypto`
 - **RLS Policies**: Users can only view rooms they're members of
 - **Storage Security**: Only authenticated users can upload/view files; users can only delete their own files
