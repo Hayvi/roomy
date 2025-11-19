@@ -21,6 +21,7 @@ interface Room {
   name: string;
   member_count: number;
   created_at: string;
+  owner_id: string;
 }
 
 const Index = () => {
@@ -139,6 +140,26 @@ const Index = () => {
     }
   };
 
+  const handleDeleteRoom = async (roomId: string) => {
+    const confirmed = window.confirm("Delete this room and all its messages? This cannot be undone.");
+    if (!confirmed) return;
+
+    const { error } = await supabase.from("rooms").delete().eq("id", roomId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete room",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Room deleted",
+        description: "The room and its messages have been removed.",
+      });
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/auth");
@@ -214,6 +235,8 @@ const Index = () => {
           <RoomList
             rooms={rooms}
             onSelectRoom={(roomId) => navigate(`/room/${roomId}`)}
+            currentUserId={currentUserId}
+            onDeleteRoom={handleDeleteRoom}
           />
         )}
       </div>
