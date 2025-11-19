@@ -26,7 +26,7 @@ const JoinRoomDialog = ({ isOpen, onJoin, loading, onOpenChange }: JoinRoomDialo
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+            <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Join Room</DialogTitle>
                     <DialogDescription>
