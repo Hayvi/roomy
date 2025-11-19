@@ -41,6 +41,8 @@ const Room = () => {
   const [roomPassword, setRoomPassword] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const [onlineUsers, setOnlineUsers] = useState<number>(0);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -62,7 +64,8 @@ const Room = () => {
         .eq("id", session.user.id)
         .single();
 
-      setCurrentUserDisplayName(profileData?.display_name || "Anonymous");
+      const displayName = profileData?.display_name || "Anonymous";
+      setCurrentUserDisplayName(displayName);
 
       // Fetch room details
       const { data: roomData, error: roomError } = await supabase
@@ -117,9 +120,9 @@ const Room = () => {
 
     initializeRoom();
 
-    // Subscribe to new messages only if member
+    // Subscribe to new messages and presence
     let channel: any;
-    if (isMember) {
+    if (isMember && roomId && currentUserId) {
       channel = supabase
         .channel(`room-${roomId}`)
         .on(
@@ -136,13 +139,24 @@ const Room = () => {
             setTimeout(scrollToBottom, 100);
           }
         )
-        .subscribe();
+        .on("presence", { event: "sync" }, () => {
+          const newState = channel.presenceState();
+          setOnlineUsers(Object.keys(newState).length);
+        })
+        .subscribe(async (status: string) => {
+          if (status === "SUBSCRIBED") {
+            await channel.track({
+              user_id: currentUserId,
+              online_at: new Date().toISOString(),
+            });
+          }
+        });
     }
 
     return () => {
       if (channel) supabase.removeChannel(channel);
     };
-  }, [roomId, navigate, toast, isMember]); // Re-run when isMember changes
+  }, [roomId, navigate, toast, isMember, currentUserId]); // Re-run when isMember or currentUserId changes
 
   const fetchMessages = async () => {
     const { data: messagesData, error: messagesError } = await supabase
@@ -217,6 +231,35 @@ const Room = () => {
       toast({
         title: "Unexpected Error",
         description: error?.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLeaveRoom = async () => {
+    if (!roomId || !currentUserId) return;
+
+    const confirmed = window.confirm("Are you sure you want to leave this room?");
+    if (!confirmed) return;
+
+    try {
+      const { error } = await supabase
+        .from("room_members")
+        .delete()
+        .eq("room_id", roomId)
+        .eq("user_id", currentUserId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Left Room",
+        description: "You have left the room.",
+      });
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to leave room",
         variant: "destructive",
       });
     }
@@ -326,7 +369,7 @@ const Room = () => {
         description: error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
-      setJoining(false);
+      setDeleting(false);
     }
   };
 
@@ -364,15 +407,21 @@ const Room = () => {
             </Button>
             <div>
               <h1 className="text-lg font-semibold">{room?.name}</h1>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Users className="h-3 w-3" />
-                <span>{room?.member_count} members</span>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  <span>{room?.member_count} members</span>
+                </div>
+                <div className="flex items-center gap-1 text-green-500">
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  <span>{onlineUsers} online</span>
+                </div>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {room?.owner_id === currentUserId && (
+            {room?.owner_id === currentUserId ? (
               <>
                 <div className="bg-muted px-3 py-1 rounded-md text-sm font-mono border border-border flex items-center gap-2">
                   <span>Password: {roomPassword || "Loading..."}</span>
@@ -397,6 +446,10 @@ const Room = () => {
                   {deleting ? "Deleting..." : "Delete Room"}
                 </Button>
               </>
+            ) : (
+              <Button variant="outline" size="sm" onClick={handleLeaveRoom}>
+                Leave Room
+              </Button>
             )}
           </div>
         </div>
