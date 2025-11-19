@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import RoomList from "@/components/RoomList";
+import { GlobalJoinRoomDialog } from "@/components/GlobalJoinRoomDialog";
 import { Plus, LogOut, MessageSquare } from "lucide-react";
 
 interface Room {
@@ -29,6 +30,7 @@ const Index = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [newRoomName, setNewRoomName] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isJoinOpen, setIsJoinOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [displayName, setDisplayName] = useState<string>("");
 
@@ -250,7 +252,7 @@ const Index = () => {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto p-4">
-        <div className="mb-6">
+        <div className="mb-6 flex gap-4"> {/* Added flex and gap-4 */}
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="w-full sm:w-auto">
@@ -282,6 +284,16 @@ const Index = () => {
               </div>
             </DialogContent>
           </Dialog>
+
+          {/* Added Join Room Button and Dialog */}
+          <Button variant="outline" onClick={() => setIsJoinOpen(true)}>
+            Join Room
+          </Button>
+
+          <GlobalJoinRoomDialog
+            isOpen={isJoinOpen}
+            onOpenChange={setIsJoinOpen}
+          />
         </div>
 
         {rooms.length === 0 ? (
