@@ -113,19 +113,39 @@ const Index = () => {
     // Generate a random 6-character password
     const password = Math.random().toString(36).slice(-6);
 
-    const { data, error } = await supabase
-      .rpc('create_room', {
-        name_input: trimmedName,
-        password_input: password
-      });
+    try {
+      const { data, error } = await supabase
+        .rpc('create_room', {
+          name_input: trimmedName,
+          password_input: password
+        });
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create room",
-        variant: "destructive",
-      });
-    } else {
+      if (error) {
+        // Check for specific error types
+        if (error.message?.includes('JWSError') || error.message?.includes('JWT')) {
+          toast({
+            title: "Session Expired",
+            description: "Please sign in again to continue",
+            variant: "destructive",
+          });
+          await signOut();
+          navigate("/auth");
+        } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+          toast({
+            title: "Connection Error",
+            description: "Please check your internet connection and try again",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error Creating Room",
+            description: error.message || "Failed to create room. Please try again.",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
       toast({
         title: "Success",
         description: `Room created! Password: ${password}`,
@@ -134,6 +154,12 @@ const Index = () => {
       setIsCreateDialogOpen(false);
       setNewRoomName("");
       navigate(`/room/${data}`);
+    } catch (error: any) {
+      toast({
+        title: "Unexpected Error",
+        description: error?.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -141,18 +167,49 @@ const Index = () => {
     const confirmed = window.confirm("Delete this room and all its messages? This cannot be undone.");
     if (!confirmed) return;
 
-    const { error } = await supabase.from("rooms").delete().eq("id", roomId);
+    try {
+      const { error } = await supabase.from("rooms").delete().eq("id", roomId);
 
-    if (error) {
+      if (error) {
+        // Check for specific error types
+        if (error.message?.includes('JWSError') || error.message?.includes('JWT')) {
+          toast({
+            title: "Session Expired",
+            description: "Please sign in again to continue",
+            variant: "destructive",
+          });
+          await signOut();
+          navigate("/auth");
+        } else if (error.code === 'PGRST116') {
+          toast({
+            title: "Room Not Found",
+            description: "This room may have already been deleted",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+          toast({
+            title: "Connection Error",
+            description: "Please check your internet connection and try again",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error Deleting Room",
+            description: error.message || "Failed to delete room. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Room deleted",
+          description: "The room and its messages have been removed.",
+        });
+      }
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to delete room",
+        title: "Unexpected Error",
+        description: error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Room deleted",
-        description: "The room and its messages have been removed.",
       });
     }
   };

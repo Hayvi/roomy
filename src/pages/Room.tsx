@@ -176,16 +176,39 @@ const Room = () => {
   const handleSendMessage = async (content: string) => {
     if (!currentUserId || !roomId) return;
 
-    const { error } = await supabase.from("messages").insert({
-      room_id: roomId,
-      user_id: currentUserId,
-      content,
-    });
+    try {
+      const { error } = await supabase.from("messages").insert({
+        room_id: roomId,
+        user_id: currentUserId,
+        content,
+      });
 
-    if (error) {
+      if (error) {
+        if (error.message?.includes('JWSError') || error.message?.includes('JWT')) {
+          toast({
+            title: "Session Expired",
+            description: "Please sign in again to continue",
+            variant: "destructive",
+          });
+          navigate("/auth");
+        } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+          toast({
+            title: "Connection Error",
+            description: "Message not sent. Please check your connection.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error Sending Message",
+            description: error.message || "Failed to send message. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to send message",
+        title: "Unexpected Error",
+        description: error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     }
@@ -198,48 +221,104 @@ const Room = () => {
     if (!confirmed) return;
 
     setDeleting(true);
-    const { error } = await supabase.from("rooms").delete().eq("id", roomId);
-    setDeleting(false);
+    try {
+      const { error } = await supabase.from("rooms").delete().eq("id", roomId);
 
-    if (error) {
+      if (error) {
+        if (error.message?.includes('JWSError') || error.message?.includes('JWT')) {
+          toast({
+            title: "Session Expired",
+            description: "Please sign in again to continue",
+            variant: "destructive",
+          });
+          navigate("/auth");
+        } else if (error.code === 'PGRST116') {
+          toast({
+            title: "Room Not Found",
+            description: "This room may have already been deleted",
+            variant: "destructive",
+          });
+          navigate("/");
+        } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+          toast({
+            title: "Connection Error",
+            description: "Please check your internet connection and try again",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error Deleting Room",
+            description: error.message || "Failed to delete room. Please try again.",
+            variant: "destructive",
+          });
+        }
+        setDeleting(false);
+        return;
+      }
+
       toast({
-        title: "Error",
-        description: "Failed to delete room",
+        title: "Room deleted",
+        description: "The room and its messages have been removed.",
+      });
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Unexpected Error",
+        description: error?.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
-      return;
+      setDeleting(false);
     }
-
-    toast({
-      title: "Room deleted",
-      description: "The room and its messages have been removed.",
-    });
-    navigate("/");
   };
 
   const handleJoinRoom = async (password: string) => {
     setJoining(true);
-    const { data, error } = await supabase.rpc('join_room', {
-      room_id: roomId,
-      password_input: password
-    });
 
-    setJoining(false);
-
-    if (error || !data) {
-      toast({
-        title: "Error",
-        description: "Incorrect password",
-        variant: "destructive",
+    try {
+      const { data, error } = await supabase.rpc('join_room', {
+        room_id: roomId,
+        password_input: password
       });
-    } else {
+
+      if (error || !data) {
+        if (error?.message?.includes('JWSError') || error?.message?.includes('JWT')) {
+          toast({
+            title: "Session Expired",
+            description: "Please sign in again to continue",
+            variant: "destructive",
+          });
+          navigate("/auth");
+        } else if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+          toast({
+            title: "Connection Error",
+            description: "Please check your internet connection and try again",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Incorrect Password",
+            description: "The password you entered is incorrect. Please try again.",
+            variant: "destructive",
+          });
+        }
+        setJoining(false);
+        return;
+      }
+
       toast({
         title: "Success",
         description: "Joined room successfully",
       });
       setIsMember(true);
       setShowJoinDialog(false);
-      // Messages will be fetched by useEffect when isMember becomes true
+      setJoining(false);
+    } catch (error: any) {
+      toast({
+        title: "Unexpected Error",
+        description: error?.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      setJoining(false);
     }
   };
 
