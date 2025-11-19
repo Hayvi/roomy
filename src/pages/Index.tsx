@@ -36,65 +36,73 @@ const Index = () => {
   const [displayName, setDisplayName] = useState<string>("");
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    let mounted = true;
+    let channel: any = null;
+    let interval: NodeJS.Timeout | null = null;
+
+    const initialize = async () => {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
-        navigate("/auth");
+        if (mounted) navigate("/auth");
         return;
       }
 
-      setCurrentUserId(session.user.id);
+      if (mounted) {
+        setCurrentUserId(session.user.id);
 
-      // Fetch user's display name from profiles
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("id", session.user.id)
-        .single();
+        // Fetch user's display name from profiles
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", session.user.id)
+          .single();
 
-      setDisplayName(profileData?.display_name || "Anonymous");
+        setDisplayName(profileData?.display_name || "Anonymous");
 
-      // Fetch rooms
-      const { data: roomsData, error } = await supabase
-        .from("rooms")
-        .select("*, online_count")
-        .order("created_at", { ascending: false });
+        // Initial fetch
+        fetchRooms();
 
-      if (error) {
-        console.error("Error fetching rooms:", error);
-      } else {
-        setRooms(roomsData || []);
+        // Subscribe to room changes
+        channel = supabase
+          .channel("rooms-channel")
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "rooms",
+            },
+            () => fetchRooms()
+          )
+          .subscribe();
+
+        // Poll for online counts every 10 seconds
+        interval = setInterval(fetchRooms, 10000);
       }
     };
 
-    initializeAuth();
-
-    // Subscribe to room changes
-    const channel = supabase
-      .channel("rooms-channel")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "rooms",
-        },
-        () => {
-          // Refetch rooms when changes occur
-          supabase
-            .from("rooms")
-            .select("*, online_count")
-            .order("created_at", { ascending: false })
-            .then(({ data }) => setRooms(data || []));
-        }
-      )
-      .subscribe();
+    initialize();
 
     return () => {
-      supabase.removeChannel(channel);
+      mounted = false;
+      if (channel) supabase.removeChannel(channel);
+      if (interval) clearInterval(interval);
     };
   }, [navigate]);
+
+  const fetchRooms = async () => {
+    const { data: roomsData, error } = await supabase
+      .from("rooms")
+      .select("*, online_count")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching rooms:", error);
+    } else {
+      setRooms(roomsData || []);
+    }
+  };
 
   const handleCreateRoom = async () => {
     const trimmedName = newRoomName.trim();

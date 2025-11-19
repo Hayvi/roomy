@@ -13,6 +13,7 @@ CREATE OR REPLACE FUNCTION public.online_count(room_row public.rooms)
 RETURNS BIGINT
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
 AS $$
   SELECT count(*)
   FROM public.room_members
