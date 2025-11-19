@@ -131,17 +131,10 @@ const Index = () => {
       toast({
         title: "Success",
         description: `Room created! Password: ${password}`,
-        duration: 10000,
+        duration: 5000,
       });
       setIsCreateDialogOpen(false);
       setNewRoomName("");
-      // We don't navigate immediately so the user can see the password?
-      // Or we show it in a dialog?
-      // The toast is okay for now, but a dialog is better.
-      // Let's just navigate and maybe show it in the room?
-      // No, only show it once.
-      // I'll show it in an alert for now to be safe.
-      alert(`Room Created! Your password is: ${password}\nSave this, it won't be shown again.`);
       navigate(`/room/${data}`);
     }
   };
