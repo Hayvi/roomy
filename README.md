@@ -1,6 +1,6 @@
 # Roomy 💬 – Anonymous Real-Time Chat Rooms
 
-A modern, anonymous chat application built with Supabase, featuring Discord-style usernames, password-protected rooms, and real-time messaging. No email required—just pick a name and start chatting!
+A modern, anonymous chat application built with Supabase, featuring Discord-style usernames, password-protected rooms, real-time messaging, and file sharing. No email required—just pick a name and start chatting!
 
 ## ✨ Features
 
@@ -9,6 +9,7 @@ A modern, anonymous chat application built with Supabase, featuring Discord-styl
 - 🔒 **Password-Protected Rooms** – Auto-generated 6-character passwords for each room
 - 🌍 **Global Join** – Join any room by name + password
 - 💬 **Real-Time Messaging** – Instant message delivery via Supabase Realtime
+- 📎 **File Sharing** – Upload images and files (up to 5MB) with inline image previews
 - 🛡️ **Row-Level Security** – Protected database with PostgreSQL RLS policies
 - 📱 **Responsive UI** – Built with shadcn/ui and Tailwind CSS
 - ⚡ **Performance Optimized** – Database triggers and indexes for scalability
@@ -17,7 +18,7 @@ A modern, anonymous chat application built with Supabase, featuring Discord-styl
 
 - **Frontend**: [Vite](https://vitejs.dev/) + [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
-- **Backend**: [Supabase](https://supabase.com/) (Auth, Database, Realtime)
+- **Backend**: [Supabase](https://supabase.com/) (Auth, Database, Realtime, Storage)
 - **Security**: PostgreSQL RLS + `pgcrypto` for password hashing
 
 ## 📋 Prerequisites
@@ -64,7 +65,8 @@ This will create:
 - `public.rooms` – Chat rooms with password hashes
 - `public.room_secrets` – Plaintext passwords (visible to room owners)
 - `public.room_members` – Room membership tracking
-- `public.messages` – Chat messages
+- `public.messages` – Chat messages with file attachments
+- `storage.buckets` – 'chat-attachments' bucket for file uploads
 - RLS policies, triggers, indexes, and RPC functions
 
 ### 4. Start Development Server
@@ -90,15 +92,17 @@ Visit `http://localhost:8080` (or the port shown in your terminal)
 4. Plaintext password is saved separately for the owner to view/share
 5. Creator automatically becomes the first member
 
-### Joining a Room
-- **From Room List**: Click a room → enter password
-- **Global Join**: Click "Join Room" → enter room name + password
+### File Sharing
+1. Users can upload files up to 5MB via the paperclip icon
+2. Files are stored in the `chat-attachments` Supabase Storage bucket
+3. Images are displayed inline with a lightbox view
+4. Other files are shown as downloadable links
 
 ### Security
 - **Password Hashing**: All passwords are hashed using PostgreSQL's `pgcrypto`
 - **RLS Policies**: Users can only view rooms they're members of
+- **Storage Security**: Only authenticated users can upload/view files; users can only delete their own files
 - **Membership Verification**: Messages require active room membership
-- **Owner Privileges**: Only room owners can delete rooms and view passwords
 
 ## 📦 Available Scripts
 
@@ -116,7 +120,10 @@ Visit `http://localhost:8080` (or the port shown in your terminal)
 - **rooms** – Room metadata (name, owner, member count, password hash)
 - **room_secrets** – Plaintext passwords for owner display
 - **room_members** – User-to-room memberships
-- **messages** – Chat messages with timestamps
+- **messages** – Chat messages with timestamps and file URLs
+
+### Storage
+- **chat-attachments** – Public bucket for file uploads
 
 ### Key Functions
 - `create_room(room_name, password)` – Creates room and adds creator as member
