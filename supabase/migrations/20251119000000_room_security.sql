@@ -87,20 +87,18 @@ CREATE POLICY "Users can view their own memberships"
 -- Let's refine the plan for the Migration:
 -- 1. Add `password_hash` to rooms.
 -- 2. Create `room_members`.
--- 3. Function `join_room(room_id, password_plaintext)`.
+-- 3. Function `join_room(room_i-- Add password column to rooms
+ALTER TABLE public.rooms ADD COLUMN IF NOT EXISTS password_hash TEXT NOT NULL DEFAULT 'not_set';
 
-ALTER TABLE public.rooms ADD COLUMN password_hash TEXT NOT NULL DEFAULT 'not_set';
+-- Enable pgcrypto extension
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 
--- Backfill existing rooms with a known hash (e.g. hash of 'password') or random?
--- Let's just set a default that allows entry if we want, or break them.
--- I'll set it to a hash of '123456' for existing rooms so they are usable.
--- pgcrypto extension might be needed.
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-UPDATE public.rooms SET password_hash = crypt('123456', gen_salt('bf'));
+-- Backfill existing rooms with a known hash
+UPDATE public.rooms SET password_hash = extensions.crypt('123456', extensions.gen_salt('bf'));
 
 -- Create room_members
-CREATE TABLE public.room_members (
+CREATE TABLE IF NOT EXISTS public.room_members (
   room_id UUID REFERENCES public.rooms(id) ON DELETE CASCADE NOT NULL,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   joined_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
@@ -152,7 +150,7 @@ BEGIN
   END IF;
 
   -- Verify password
-  IF room_password_hash = crypt(password_input, room_password_hash) THEN
+  IF room_password_hash = extensions.crypt(password_input, room_password_hash) THEN
     -- Add to members
     INSERT INTO public.room_members (room_id, user_id)
     VALUES (room_id, auth.uid())
@@ -174,7 +172,7 @@ DECLARE
   new_room_id UUID;
 BEGIN
   INSERT INTO public.rooms (owner_id, name, password_hash)
-  VALUES (auth.uid(), name_input, crypt(password_input, gen_salt('bf')))
+  VALUES (auth.uid(), name_input, extensions.crypt(password_input, extensions.gen_salt('bf')))
   RETURNING id INTO new_room_id;
   
   RETURN new_room_id;
