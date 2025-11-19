@@ -45,6 +45,10 @@ const Auth = () => {
       return;
     }
 
+    // Generate Discord-style suffix (e.g., #1234)
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    const finalDisplayName = `${trimmedName}#${suffix}`;
+
     setLoading(true);
 
     try {
@@ -59,16 +63,16 @@ const Auth = () => {
         .from("profiles")
         .upsert({
           id: authData.user.id,
-          display_name: trimmedName,
+          display_name: finalDisplayName,
           email: null,
         });
 
       if (profileError) {
-        // Check if display name is already taken
+        // Check if display name is already taken (rare collision)
         if (profileError.code === '23505') { // Unique constraint violation
           toast({
             title: "Name Taken",
-            description: "This display name is already in use. Please choose another.",
+            description: "This specific name tag is taken. Please try again.",
             variant: "destructive",
           });
           // Sign out the anonymous user since we can't set the profile
@@ -81,7 +85,7 @@ const Auth = () => {
 
       toast({
         title: "Welcome!",
-        description: `Signed in as ${trimmedName}`,
+        description: `Signed in as ${finalDisplayName}`,
       });
       navigate("/");
     } catch (error: any) {
@@ -119,11 +123,11 @@ const Auth = () => {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 required
-                maxLength={30}
+                maxLength={20}
                 autoFocus
               />
               <p className="text-xs text-muted-foreground">
-                Choose a unique name to identify yourself
+                We'll add a random #tag to make your name unique
               </p>
             </div>
             <Button
