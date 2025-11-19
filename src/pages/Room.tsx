@@ -14,6 +14,7 @@ interface Message {
   content: string;
   created_at: string;
   user_id: string;
+  file_url?: string;
   profiles?: {
     display_name?: string | null;
   };
@@ -217,7 +218,7 @@ const Room = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, fileUrl?: string) => {
     if (!currentUserId || !roomId) return;
 
     try {
@@ -225,6 +226,7 @@ const Room = () => {
         room_id: roomId,
         user_id: currentUserId,
         content,
+        file_url: fileUrl || null,
       });
 
       if (error) {
@@ -488,6 +490,7 @@ const Room = () => {
                 userName={message.profiles?.display_name || currentUserDisplayName || "Anonymous"}
                 timestamp={message.created_at}
                 isCurrentUser={message.user_id === currentUserId}
+                fileUrl={message.file_url}
               />
             ))
           ) : (
