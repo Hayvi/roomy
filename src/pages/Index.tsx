@@ -35,7 +35,7 @@ const Index = () => {
   useEffect(() => {
     const initializeAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         navigate("/auth");
         return;
@@ -88,14 +88,38 @@ const Index = () => {
   const handleCreateRoom = async () => {
     if (!newRoomName.trim() || !currentUserId) return;
 
+    // Generate a random 6-character password
+    const password = Math.random().toString(36).slice(-6);
+
+    // We need to send the password to the server.
+    // Since we are using pgcrypto's `crypt` function in the migration to verify,
+    // we should send the plain password to the server and let the server hash it?
+    // OR we can hash it client side?
+    // The migration I wrote expects `password_hash` column in the INSERT.
+    // And `join_room` compares `crypt(input, hash)`.
+    // So I need to insert the HASH into the DB.
+    // But wait, `crypt` is a server-side function.
+    // If I want to use `crypt` for verification, I should store the result of `crypt(password, gen_salt('bf'))`.
+    // I can't call `crypt` from the client easily without an RPC.
+    // Let's create a helper RPC to create the room securely?
+    // OR, just for now, let's use a simple client-side hash or just send the password and let a trigger hash it?
+    // Trigger is cleaner.
+    // Let's modify the migration to handle hashing on insert?
+    // Actually, I already wrote the migration to expect `password_hash`.
+    // I'll use a simple approach: The client sends the plain password in a temporary field? No.
+    // I'll use an RPC to create the room. It's cleaner.
+
+    // Wait, I can't easily change the migration now without rewriting the file.
+    // Let's rewrite the migration to include a `create_room` function that takes plain password.
+    // This is better.
+
+    // For now, I will update the frontend to assume I will fix the migration to have a `create_room` function.
+
     const { data, error } = await supabase
-      .from("rooms")
-      .insert({
-        name: newRoomName,
-        owner_id: currentUserId,
-      })
-      .select()
-      .single();
+      .rpc('create_room', {
+        name_input: newRoomName,
+        password_input: password
+      });
 
     if (error) {
       toast({
@@ -106,11 +130,19 @@ const Index = () => {
     } else {
       toast({
         title: "Success",
-        description: "Room created successfully",
+        description: `Room created! Password: ${password}`,
+        duration: 10000,
       });
       setIsCreateDialogOpen(false);
       setNewRoomName("");
-      navigate(`/room/${data.id}`);
+      // We don't navigate immediately so the user can see the password?
+      // Or we show it in a dialog?
+      // The toast is okay for now, but a dialog is better.
+      // Let's just navigate and maybe show it in the room?
+      // No, only show it once.
+      // I'll show it in an alert for now to be safe.
+      alert(`Room Created! Your password is: ${password}\nSave this, it won't be shown again.`);
+      navigate(`/room/${data}`);
     }
   };
 
