@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import RoomList from "@/components/RoomList";
 import { GlobalJoinRoomDialog } from "@/components/GlobalJoinRoomDialog";
 import { Plus, LogOut, MessageSquare } from "lucide-react";
+import { MAX_ROOM_NAME_LENGTH, ROOM_PASSWORD_LENGTH, ROOM_LIST_POLL_INTERVAL_MS } from "@/lib/constants";
 
 interface Room {
   id: string;
@@ -77,8 +78,8 @@ const Index = () => {
           )
           .subscribe();
 
-        // Poll for online counts every 10 seconds
-        interval = setInterval(fetchRooms, 10000);
+        // Poll for online counts
+        interval = setInterval(fetchRooms, ROOM_LIST_POLL_INTERVAL_MS);
       }
     };
 
@@ -117,10 +118,10 @@ const Index = () => {
       return;
     }
 
-    if (trimmedName.length > 50) {
+    if (trimmedName.length > MAX_ROOM_NAME_LENGTH) {
       toast({
         title: "Invalid Room Name",
-        description: "Room name must be 50 characters or less",
+        description: `Room name must be ${MAX_ROOM_NAME_LENGTH} characters or less`,
         variant: "destructive",
       });
       return;
@@ -128,8 +129,8 @@ const Index = () => {
 
     if (!currentUserId) return;
 
-    // Generate a random 6-character password
-    const password = Math.random().toString(36).slice(-6);
+    // Generate a random password
+    const password = Math.random().toString(36).slice(-ROOM_PASSWORD_LENGTH);
 
     try {
       const { data, error } = await supabase

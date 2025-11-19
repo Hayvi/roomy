@@ -7,6 +7,7 @@ import ChatMessage from "@/components/ChatMessage";
 import MessageInput from "@/components/MessageInput";
 import JoinRoomDialog from "@/components/JoinRoomDialog";
 import { ArrowLeft, Users, Copy } from "lucide-react";
+import { HEARTBEAT_INTERVAL_MS } from "@/lib/constants";
 
 interface Message {
   id: string;
@@ -174,7 +175,7 @@ const Room = () => {
     updateHeartbeat();
 
     // Interval update
-    const interval = setInterval(updateHeartbeat, 30000); // Every 30s
+    const interval = setInterval(updateHeartbeat, HEARTBEAT_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, [isMember, roomId, currentUserId]);

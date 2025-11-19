@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageSquare } from "lucide-react";
+import { MAX_DISPLAY_NAME_LENGTH, NAME_SUFFIX_MIN, NAME_SUFFIX_MAX } from "@/lib/constants";
 
 const Auth = () => {
   const [displayName, setDisplayName] = useState("");
@@ -36,17 +37,17 @@ const Auth = () => {
       return;
     }
 
-    if (trimmedName.length > 30) {
+    if (trimmedName.length > MAX_DISPLAY_NAME_LENGTH) {
       toast({
         title: "Invalid Name",
-        description: "Display name must be 30 characters or less",
+        description: `Display name must be ${MAX_DISPLAY_NAME_LENGTH} characters or less`,
         variant: "destructive",
       });
       return;
     }
 
     // Generate Discord-style suffix (e.g., #1234)
-    const suffix = Math.floor(1000 + Math.random() * 9000);
+    const suffix = Math.floor(NAME_SUFFIX_MIN + Math.random() * (NAME_SUFFIX_MAX - NAME_SUFFIX_MIN + 1));
     const finalDisplayName = `${trimmedName}#${suffix}`;
 
     setLoading(true);
