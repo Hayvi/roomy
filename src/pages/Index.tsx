@@ -87,38 +87,35 @@ const Index = () => {
   }, [navigate]);
 
   const handleCreateRoom = async () => {
-    if (!newRoomName.trim() || !currentUserId) return;
+    const trimmedName = newRoomName.trim();
+
+    // Validate room name
+    if (!trimmedName) {
+      toast({
+        title: "Invalid Room Name",
+        description: "Room name cannot be empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (trimmedName.length > 50) {
+      toast({
+        title: "Invalid Room Name",
+        description: "Room name must be 50 characters or less",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!currentUserId) return;
 
     // Generate a random 6-character password
     const password = Math.random().toString(36).slice(-6);
 
-    // We need to send the password to the server.
-    // Since we are using pgcrypto's `crypt` function in the migration to verify,
-    // we should send the plain password to the server and let the server hash it?
-    // OR we can hash it client side?
-    // The migration I wrote expects `password_hash` column in the INSERT.
-    // And `join_room` compares `crypt(input, hash)`.
-    // So I need to insert the HASH into the DB.
-    // But wait, `crypt` is a server-side function.
-    // If I want to use `crypt` for verification, I should store the result of `crypt(password, gen_salt('bf'))`.
-    // I can't call `crypt` from the client easily without an RPC.
-    // Let's create a helper RPC to create the room securely?
-    // OR, just for now, let's use a simple client-side hash or just send the password and let a trigger hash it?
-    // Trigger is cleaner.
-    // Let's modify the migration to handle hashing on insert?
-    // Actually, I already wrote the migration to expect `password_hash`.
-    // I'll use a simple approach: The client sends the plain password in a temporary field? No.
-    // I'll use an RPC to create the room. It's cleaner.
-
-    // Wait, I can't easily change the migration now without rewriting the file.
-    // Let's rewrite the migration to include a `create_room` function that takes plain password.
-    // This is better.
-
-    // For now, I will update the frontend to assume I will fix the migration to have a `create_room` function.
-
     const { data, error } = await supabase
       .rpc('create_room', {
-        name_input: newRoomName,
+        name_input: trimmedName,
         password_input: password
       });
 
