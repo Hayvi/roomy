@@ -11,7 +11,6 @@ interface ChatMessageProps {
 const ChatMessage = ({ content, userName, timestamp, isCurrentUser }: ChatMessageProps) => {
   const getInitials = (name: string) => {
     return name
-      .split("@")[0]
       .substring(0, 2)
       .toUpperCase();
   };
@@ -25,17 +24,16 @@ const ChatMessage = ({ content, userName, timestamp, isCurrentUser }: ChatMessag
       </Avatar>
       <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[70%]`}>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-medium text-foreground">{userName.split("@")[0]}</span>
+          <span className="text-sm font-medium text-foreground">{userName}</span>
           <span className="text-xs text-muted-foreground">
             {format(new Date(timestamp), "HH:mm")}
           </span>
         </div>
         <div
-          className={`rounded-2xl px-4 py-2 ${
-            isCurrentUser
+          className={`rounded-2xl px-4 py-2 ${isCurrentUser
               ? "bg-chat-bubble-user text-primary-foreground"
               : "bg-chat-bubble-other border border-border"
-          }`}
+            }`}
         >
           <p className="text-sm break-words">{content}</p>
         </div>

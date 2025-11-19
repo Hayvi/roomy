@@ -31,7 +31,7 @@ const Index = () => {
   const [newRoomName, setNewRoomName] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>("");
-  const [userEmail, setUserEmail] = useState<string>("");
+  const [displayName, setDisplayName] = useState<string>("");
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -43,7 +43,15 @@ const Index = () => {
       }
 
       setCurrentUserId(session.user.id);
-      setUserEmail(session.user.email || "");
+
+      // Fetch user's display name from profiles
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", session.user.id)
+        .single();
+
+      setDisplayName(profileData?.display_name || "Anonymous");
 
       // Fetch rooms
       const { data: roomsData, error } = await supabase
@@ -231,7 +239,7 @@ const Index = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">Chat Rooms</h1>
-                <p className="text-sm text-muted-foreground">{userEmail}</p>
+                <p className="text-sm text-muted-foreground">{displayName}</p>
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={handleSignOut}>

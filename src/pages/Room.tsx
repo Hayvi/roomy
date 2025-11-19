@@ -14,7 +14,7 @@ interface Message {
   created_at: string;
   user_id: string;
   profiles?: {
-    email?: string | null;
+    display_name?: string | null;
   };
 }
 
@@ -32,7 +32,7 @@ const Room = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [room, setRoom] = useState<Room | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
-  const [currentUserEmail, setCurrentUserEmail] = useState<string>("");
+  const [currentUserDisplayName, setCurrentUserDisplayName] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [isMember, setIsMember] = useState(false);
@@ -54,7 +54,15 @@ const Room = () => {
       }
 
       setCurrentUserId(session.user.id);
-      setCurrentUserEmail(session.user.email || "");
+
+      // Fetch user's display name
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", session.user.id)
+        .single();
+
+      setCurrentUserDisplayName(profileData?.display_name || "Anonymous");
 
       // Fetch room details
       const { data: roomData, error: roomError } = await supabase
@@ -139,7 +147,7 @@ const Room = () => {
   const fetchMessages = async () => {
     const { data: messagesData, error: messagesError } = await supabase
       .from("messages")
-      .select("*, profiles:profiles(email)")
+      .select("*, profiles:profiles(display_name)")
       .eq("room_id", roomId)
       .order("created_at", { ascending: true })
       .limit(50);
@@ -153,19 +161,19 @@ const Room = () => {
   };
 
   const enrichMessageWithProfile = async (message: Message) => {
-    if (message.profiles?.email) {
+    if (message.profiles?.display_name) {
       return message;
     }
 
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("email")
+      .select("display_name")
       .eq("id", message.user_id)
       .single();
 
     return {
       ...message,
-      profiles: profileData?.email ? { email: profileData.email } : message.profiles,
+      profiles: profileData,
     };
   };
 
@@ -397,7 +405,7 @@ const Room = () => {
               <ChatMessage
                 key={message.id}
                 content={message.content}
-                userName={message.profiles?.email || currentUserEmail || message.user_id}
+                userName={message.profiles?.display_name || currentUserDisplayName || "Anonymous"}
                 timestamp={message.created_at}
                 isCurrentUser={message.user_id === currentUserId}
               />
