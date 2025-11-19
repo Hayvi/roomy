@@ -12,7 +12,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { signOut } from "@/lib/supabase-auth";
 import RoomList from "@/components/RoomList";
 import { Plus, LogOut, MessageSquare } from "lucide-react";
 
@@ -136,7 +135,7 @@ const Index = () => {
             description: "Please sign in again to continue",
             variant: "destructive",
           });
-          await signOut();
+          await supabase.auth.signOut();
           navigate("/auth");
         } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
           toast({
@@ -186,7 +185,7 @@ const Index = () => {
             description: "Please sign in again to continue",
             variant: "destructive",
           });
-          await signOut();
+          await supabase.auth.signOut();
           navigate("/auth");
         } else if (error.code === 'PGRST116') {
           toast({
@@ -223,7 +222,7 @@ const Index = () => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    await supabase.auth.signOut();
     navigate("/auth");
   };
 
