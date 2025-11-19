@@ -105,7 +105,7 @@ const Room = () => {
         .select("room_id")
         .eq("room_id", roomId)
         .eq("user_id", session.user.id)
-        .single();
+        .maybeSingle();
 
       if (memberData) {
         setIsMember(true);
@@ -157,6 +157,27 @@ const Room = () => {
       if (channel) supabase.removeChannel(channel);
     };
   }, [roomId, navigate, toast, isMember, currentUserId]); // Re-run when isMember or currentUserId changes
+
+  // Heartbeat to keep user "online" in the global list
+  useEffect(() => {
+    if (!isMember || !roomId || !currentUserId) return;
+
+    const updateHeartbeat = async () => {
+      await supabase
+        .from("room_members")
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq("room_id", roomId)
+        .eq("user_id", currentUserId);
+    };
+
+    // Initial update
+    updateHeartbeat();
+
+    // Interval update
+    const interval = setInterval(updateHeartbeat, 30000); // Every 30s
+
+    return () => clearInterval(interval);
+  }, [isMember, roomId, currentUserId]);
 
   const fetchMessages = async () => {
     const { data: messagesData, error: messagesError } = await supabase

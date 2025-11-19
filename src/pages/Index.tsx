@@ -20,6 +20,7 @@ interface Room {
   id: string;
   name: string;
   member_count: number;
+  online_count?: number;
   created_at: string;
   owner_id: string;
 }
@@ -57,7 +58,7 @@ const Index = () => {
       // Fetch rooms
       const { data: roomsData, error } = await supabase
         .from("rooms")
-        .select("*")
+        .select("*, online_count")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -83,7 +84,7 @@ const Index = () => {
           // Refetch rooms when changes occur
           supabase
             .from("rooms")
-            .select("*")
+            .select("*, online_count")
             .order("created_at", { ascending: false })
             .then(({ data }) => setRooms(data || []));
         }

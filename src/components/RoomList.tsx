@@ -7,6 +7,7 @@ interface Room {
   id: string;
   name: string;
   member_count: number;
+  online_count?: number;
   created_at: string;
   owner_id: string;
 }
@@ -36,11 +37,21 @@ const RoomList = ({ rooms, onSelectRoom, selectedRoomId, currentUserId, onDelete
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">{room.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Users className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      {room.member_count} {room.member_count === 1 ? "member" : "members"}
-                    </span>
+                  <div className="flex items-center gap-3 mt-1">
+                    <div className="flex items-center gap-1">
+                      <Users className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        {room.member_count} {room.member_count === 1 ? "member" : "members"}
+                      </span>
+                    </div>
+                    {room.online_count !== undefined && room.online_count > 0 && (
+                      <div className="flex items-center gap-1">
+                        <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-xs text-green-600 font-medium">
+                          {room.online_count} online
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
