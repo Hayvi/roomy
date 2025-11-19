@@ -1,83 +1,155 @@
-# Roomy – Real-Time Chat Rooms
+# Roomy 💬 – Anonymous Real-Time Chat Rooms
 
-Roomy is a Supabase-powered chat experience where authenticated users can spin up rooms, invite others, and exchange messages in real time. The project is built with Vite, React, TypeScript, Tailwind CSS, and shadcn/ui components for a modern UX.
+A modern, anonymous chat application built with Supabase, featuring Discord-style usernames, password-protected rooms, and real-time messaging. No email required—just pick a name and start chatting!
 
-## Features
+## ✨ Features
 
-- 🔐 Email/password auth backed by Supabase
-- 💬 Realtime room list and message stream using Supabase channels
-- 📱 Responsive UI with shadcn/ui primitives and Tailwind CSS
-- 🪄 Toast feedback, dialogs, and accessible components out of the box
+- 🎭 **Anonymous Authentication** – No email or sign-up required
+- 🏷️ **Discord-Style Names** – Unique display names with auto-generated tags (e.g., `Alex#1234`)
+- 🔒 **Password-Protected Rooms** – Auto-generated 6-character passwords for each room
+- 🌍 **Global Join** – Join any room by name + password
+- 💬 **Real-Time Messaging** – Instant message delivery via Supabase Realtime
+- 🛡️ **Row-Level Security** – Protected database with PostgreSQL RLS policies
+- 📱 **Responsive UI** – Built with shadcn/ui and Tailwind CSS
+- ⚡ **Performance Optimized** – Database triggers and indexes for scalability
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- [Vite](https://vitejs.dev/) + [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- [Tailwind CSS](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/)
-- [Supabase JS SDK](https://supabase.com/docs/reference/javascript/initializing) for auth + database
+- **Frontend**: [Vite](https://vitejs.dev/) + [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
+- **Backend**: [Supabase](https://supabase.com/) (Auth, Database, Realtime)
+- **Security**: PostgreSQL RLS + `pgcrypto` for password hashing
 
-## Prerequisites
+## 📋 Prerequisites
 
 - Node.js ≥ 18 (recommend using [nvm](https://github.com/nvm-sh/nvm))
 - npm ≥ 9
-- Supabase account + project (for local development)
-- Supabase CLI (installed globally or via `npx supabase`)
+- Supabase account + project
+- Supabase CLI (install globally or use via `npx supabase`)
 
-## Getting Started
+## 🚀 Getting Started
+
+### 1. Clone & Install
 
 ```bash
-# 1. Clone the repo
 git clone https://github.com/Hayvi/roomy.git
 cd roomy
-
-# 2. Install dependencies
 npm install
-
-# 3. Configure environment variables
-cp .env.example .env
-# Update VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY with your project creds
-
-# 4. Start the dev server
-npm run dev
-# Vite will default to http://localhost:8080 (auto-bumps if the port is busy)
 ```
 
-## Supabase Setup
+### 2. Configure Environment
 
-1. Log in via CLI (only needed once per machine):
-   ```bash
-   npx supabase login
-   ```
-2. Link the repo to your project:
-   ```bash
-   npx supabase link --project-ref <your-project-ref>
-   ```
-3. Apply migrations to create the required tables/functions:
-   ```bash
-   npx supabase db push
-   ```
-4. (Optional) Use the Supabase Table Editor to seed example rooms/users.
+```bash
+cp .env.example .env
+```
 
-## Available Scripts
+Update `.env` with your Supabase credentials:
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
+```
+
+### 3. Set Up Database
+
+```bash
+# Link to your Supabase project
+npx supabase link --project-ref <your-project-ref>
+
+# Apply all migrations
+npx supabase db push
+```
+
+This will create:
+- `public.profiles` – User display names
+- `public.rooms` – Chat rooms with password hashes
+- `public.room_secrets` – Plaintext passwords (visible to room owners)
+- `public.room_members` – Room membership tracking
+- `public.messages` – Chat messages
+- RLS policies, triggers, indexes, and RPC functions
+
+### 4. Start Development Server
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:8080` (or the port shown in your terminal)
+
+## 📚 How It Works
+
+### Anonymous Authentication
+1. User picks a display name (e.g., "Alex")
+2. App appends a random 4-digit tag → `Alex#1234`
+3. Supabase creates an anonymous session
+4. User profile is stored with the unique display name
+
+### Creating a Room
+1. User clicks "Create Room" and enters a name
+2. App generates a random 6-character password (e.g., `x7k9p2`)
+3. Password is hashed with `pgcrypto.crypt()` and stored
+4. Plaintext password is saved separately for the owner to view/share
+5. Creator automatically becomes the first member
+
+### Joining a Room
+- **From Room List**: Click a room → enter password
+- **Global Join**: Click "Join Room" → enter room name + password
+
+### Security
+- **Password Hashing**: All passwords are hashed using PostgreSQL's `pgcrypto`
+- **RLS Policies**: Users can only view rooms they're members of
+- **Membership Verification**: Messages require active room membership
+- **Owner Privileges**: Only room owners can delete rooms and view passwords
+
+## 📦 Available Scripts
 
 | Command | Description |
 | ------- | ----------- |
-| `npm run dev` | Start Vite in dev mode with HMR |
+| `npm run dev` | Start Vite dev server with HMR |
 | `npm run build` | Production build (outputs to `dist/`) |
-| `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run ESLint across the project |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint |
 
-## Deployment
+## 🗄️ Database Schema
 
-- Build artifacts live in `dist/`. Deploy to any static host (Netlify, Vercel, Cloudflare Pages, etc.) that supports single-page apps.
-- Ensure the production host exposes the same Supabase env variables (e.g., via dashboard settings or deployment secrets).
+### Tables
+- **profiles** – User display names (unique)
+- **rooms** – Room metadata (name, owner, member count, password hash)
+- **room_secrets** – Plaintext passwords for owner display
+- **room_members** – User-to-room memberships
+- **messages** – Chat messages with timestamps
 
-## Contributing
+### Key Functions
+- `create_room(room_name, password)` – Creates room and adds creator as member
+- `join_room(room_id, password_input)` – Verifies password and adds user as member
 
-1. Fork & clone
-2. Create a feature branch
-3. Commit with conventional messages (`feat:`, `fix:`, etc.)
-4. Push and open a PR
+### Triggers
+- Auto-update `member_count` when users join/leave rooms
 
-## License
+## 🌐 Deployment
 
-This project is distributed under the MIT License. See [`LICENSE`](LICENSE) if/when one is added, or adapt to your preferred license.
+Build the frontend:
+```bash
+npm run build
+```
+
+Deploy `dist/` to any static host:
+- [Vercel](https://vercel.com/)
+- [Netlify](https://www.netlify.com/)
+- [Cloudflare Pages](https://pages.cloudflare.com/)
+
+**Important**: Ensure your host is configured with the Supabase environment variables.
+
+## 🤝 Contributing
+
+1. Fork & clone the repository
+2. Create a feature branch (`git checkout -b feat/amazing-feature`)
+3. Commit changes using [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, etc.)
+4. Push and open a Pull Request
+
+## 📄 License
+
+This project is distributed under the MIT License.
+
+---
+
+**Built with ❤️ using Supabase, React, and TypeScript**
