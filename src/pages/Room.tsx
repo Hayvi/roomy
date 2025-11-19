@@ -344,6 +344,11 @@ const Room = () => {
         isOpen={showJoinDialog}
         onJoin={handleJoinRoom}
         loading={joining}
+        onOpenChange={(open) => {
+          if (!open) {
+            navigate("/");
+          }
+        }}
       />
 
       {/* Header */}

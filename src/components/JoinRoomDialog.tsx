@@ -13,9 +13,10 @@ interface JoinRoomDialogProps {
     isOpen: boolean;
     onJoin: (password: string) => Promise<void>;
     loading: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
-const JoinRoomDialog = ({ isOpen, onJoin, loading }: JoinRoomDialogProps) => {
+const JoinRoomDialog = ({ isOpen, onJoin, loading, onOpenChange }: JoinRoomDialogProps) => {
     const [password, setPassword] = useState("");
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -24,7 +25,7 @@ const JoinRoomDialog = ({ isOpen, onJoin, loading }: JoinRoomDialogProps) => {
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={() => { }}>
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>Join Room</DialogTitle>
