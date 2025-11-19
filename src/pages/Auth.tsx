@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageSquare } from "lucide-react";
 import { MAX_DISPLAY_NAME_LENGTH, NAME_SUFFIX_MIN, NAME_SUFFIX_MAX } from "@/lib/constants";
+
 
 const Auth = () => {
   const [displayName, setDisplayName] = useState("");
@@ -105,9 +105,10 @@ const Auth = () => {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-primary rounded-xl">
-              <MessageSquare className="w-8 h-8 text-primary-foreground" />
+              <img src="/favicon.png" alt="Roomy" className="w-8 h-8" />
             </div>
           </div>
+
           <CardTitle className="text-2xl font-bold">
             Welcome to Roomy
           </CardTitle>

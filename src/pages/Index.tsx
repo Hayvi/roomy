@@ -14,7 +14,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import RoomList from "@/components/RoomList";
 import { GlobalJoinRoomDialog } from "@/components/GlobalJoinRoomDialog";
-import { Plus, LogOut, MessageSquare } from "lucide-react";
+import { Plus, LogOut } from "lucide-react";
+
 import { MAX_ROOM_NAME_LENGTH, ROOM_PASSWORD_LENGTH, ROOM_LIST_POLL_INTERVAL_MS } from "@/lib/constants";
 
 interface Room {
@@ -246,8 +247,9 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary rounded-xl">
-                <MessageSquare className="h-6 w-6 text-primary-foreground" />
+                <img src="/favicon.png" alt="Roomy" className="h-6 w-6" />
               </div>
+
               <div>
                 <h1 className="text-2xl font-bold">Roomy</h1>
                 <p className="text-sm text-muted-foreground">{displayName}</p>
@@ -308,8 +310,9 @@ const Index = () => {
 
         {rooms.length === 0 ? (
           <div className="text-center py-12">
-            <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <img src="/favicon.png" alt="Roomy" className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No rooms yet</h3>
+
             <p className="text-muted-foreground mb-4">
               Create your first room to start chatting
             </p>

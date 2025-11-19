@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Users, Trash2 } from "lucide-react";
+import { Users, Trash2 } from "lucide-react";
+
 import { format } from "date-fns";
 
 interface Room {
@@ -33,8 +34,9 @@ const RoomList = ({ rooms, onSelectRoom, selectedRoomId, currentUserId, onDelete
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3 flex-1" onClick={() => onSelectRoom(room.id)}>
                 <div className="p-2 bg-primary/10 rounded-lg">
-                  <MessageSquare className="h-4 w-4 text-primary" />
+                  <img src="/favicon.png" alt="Room" className="h-4 w-4" />
                 </div>
+
                 <div>
                   <h3 className="font-semibold text-sm">{room.name}</h3>
                   <div className="flex items-center gap-3 mt-1">
