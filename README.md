@@ -485,7 +485,7 @@ Built with these amazing technologies:
 
 - 🐛 **Issues**: [GitHub Issues](https://github.com/Hayvi/roomy/issues)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/Hayvi/roomy/discussions)
-- 📧 **Email**: [your-email@example.com](mailto:your-email@example.com)
+- 📧 **Email**: [your-email@example.com](mailto:ghzwael@gmail.com)
 
 ---
 
