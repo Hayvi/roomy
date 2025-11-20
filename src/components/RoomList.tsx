@@ -29,10 +29,11 @@ const RoomList = ({ rooms, onSelectRoom, selectedRoomId, currentUserId, onDelete
           key={room.id}
           className={`cursor-pointer transition-colors hover:bg-accent ${selectedRoomId === room.id ? "bg-accent" : ""
             }`}
+          onClick={() => onSelectRoom(room.id)}
         >
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3 flex-1" onClick={() => onSelectRoom(room.id)}>
+              <div className="flex items-center gap-3 flex-1">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <img src="/logo.svg" alt="Room" className="h-4 w-4" />
 
