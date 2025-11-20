@@ -380,6 +380,12 @@ const Room = () => {
             description: "Please check your internet connection and try again",
             variant: "destructive",
           });
+        } else if (error?.message?.includes('Room is full')) {
+          toast({
+            title: "Room Full",
+            description: "This room has reached its maximum capacity of 15 members.",
+            variant: "destructive",
+          });
         } else {
           toast({
             title: "Incorrect Password",
