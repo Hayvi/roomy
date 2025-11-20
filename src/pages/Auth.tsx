@@ -121,6 +121,8 @@ const Auth = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Input
+                id="display-name"
+                name="displayName"
                 type="text"
                 placeholder="Enter your name"
                 value={displayName}

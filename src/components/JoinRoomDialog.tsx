@@ -35,6 +35,8 @@ const JoinRoomDialog = ({ isOpen, onJoin, loading, onOpenChange }: JoinRoomDialo
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <Input
+                        id="room-password"
+                        name="password"
                         type="text"
                         placeholder="Enter room password"
                         value={password}

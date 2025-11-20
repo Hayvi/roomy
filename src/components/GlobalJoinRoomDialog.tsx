@@ -107,6 +107,7 @@ export function GlobalJoinRoomDialog({
                         <Label htmlFor="password">Password</Label>
                         <Input
                             id="password"
+                            name="password"
                             type="text"
                             placeholder="Enter room password"
                             value={password}

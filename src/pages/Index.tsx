@@ -281,6 +281,8 @@ const Index = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <Input
+                  id="room-name"
+                  name="roomName"
                   placeholder="Room name"
                   value={newRoomName}
                   onChange={(e) => setNewRoomName(e.target.value)}
@@ -289,6 +291,7 @@ const Index = () => {
                       handleCreateRoom();
                     }
                   }}
+                  maxLength={50}
                 />
                 <Button onClick={handleCreateRoom} className="w-full">
                   Create
